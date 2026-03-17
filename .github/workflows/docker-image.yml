@@ -29,6 +29,9 @@ jobs:
       - name: Setup Database
         run: bundle exec rails db:create db:migrate
 
+      - name: Run test suite
+        run: bundle exec rails test
+
   lint:
     runs-on: ubuntu-latest
 
