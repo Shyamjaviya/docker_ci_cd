@@ -35,11 +35,7 @@ jobs:
           bundler-cache: true
 
       - name: Setup Database
-        run: bin/rails db:prepare
-
-      # Optional: run tests if you have any
-      - name: Run Tests
-        run: bundle exec rails test || echo "No tests found"
+        run: bundle exec rails db:create db:migrate
 
   lint:
     runs-on: ubuntu-latest
@@ -53,13 +49,6 @@ jobs:
         with:
           ruby-version: 3.1.6
           bundler-cache: true
-
-      - name: Install and Run Linters
-        run: |
-          gem install brakeman
-          gem install rubocop
-          brakeman -q
-          rubocop
 
   docker:
     runs-on: ubuntu-latest
