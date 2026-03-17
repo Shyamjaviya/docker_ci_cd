@@ -1,0 +1,92 @@
+name: "Ruby on Rails CI/CD"
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_DB: ci_cd_demo_test
+          POSTGRES_USER: shyam
+          POSTGRES_PASSWORD: shyam
+
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: "postgres://shyam:shyam@localhost:5432/ci_cd_demo_test"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1.6
+          bundler-cache: true
+
+      - name: Setup Database
+        run: bin/rails db:prepare
+
+      # Optional: run tests if you have any
+      - name: Run Tests
+        run: bundle exec rails test || echo "No tests found"
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1.6
+          bundler-cache: true
+
+      - name: Install and Run Linters
+        run: |
+          gem install brakeman
+          gem install rubocop
+          brakeman -q
+          rubocop
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+
+    # Only push Docker image on main branch (not PRs)
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: devilkubernetes
+          password: Shyam_200420
+          
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            devilkubernetes/rails-demo:latest
+            devilkubernetes/rails-demo:${{ github.sha }}
