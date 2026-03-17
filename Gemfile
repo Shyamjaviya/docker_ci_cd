@@ -59,7 +59,8 @@ group :development do
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
 
-  gem "error_highlight", ">= 0.4.0", platforms: [:ruby]
+  # error_highlight is a default Ruby gem; lock to a compatible version to avoid bundler activation errors
+  gem "error_highlight", "~> 0.3", platforms: [:ruby]
 end
 
 group :test do

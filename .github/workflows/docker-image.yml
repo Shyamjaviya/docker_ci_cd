@@ -10,19 +10,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:14
-        ports:
-          - "5432:5432"
-        env:
-          POSTGRES_DB: ci_cd_demo_test
-          POSTGRES_USER: shyam
-          POSTGRES_PASSWORD: shyam
-
     env:
       RAILS_ENV: test
-      DATABASE_URL: "postgres://shyam:shyam@localhost:5432/ci_cd_demo_test"
 
     steps:
       - name: Checkout code
@@ -33,6 +22,9 @@ jobs:
         with:
           ruby-version: 3.1.6
           bundler-cache: true
+
+      - name: Install system dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y libsqlite3-dev
 
       - name: Setup Database
         run: bundle exec rails db:create db:migrate
